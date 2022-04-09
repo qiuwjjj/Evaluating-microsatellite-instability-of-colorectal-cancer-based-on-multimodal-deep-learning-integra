@@ -1,0 +1,28 @@
+import cv2
+import numpy as np
+
+
+def get_area_ratio(img):
+    """去除轮廓内的干扰区域
+    :param img: 滑动窗口
+    :return: 面积比
+    """
+    img = np.array(img)
+
+    img = cv2.GaussianBlur(img, (3, 3), 0)
+    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    thresh, img_binary = cv2.threshold(img_gray, 200, 255, cv2.THRESH_BINARY)
+    # cv2.THRESH_BINARY   表示阈值的二值化操作，大于阈值使用maxval表示，
+    # 小于阈值使用0表示，表明大于200的值均用255表示
+
+    # 得到轮廓
+    contous, heriachy = cv2.findContours(img_binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    area_list = []
+    for contou in contous:
+        area = cv2.contourArea(contou)  # 此函数利用格林公式计算轮廓的面积
+        area_list.append(area)
+
+    img_w = img.shape[0]
+    img_h = img.shape[1]
+    area_ratio = sum(area_list)/(img_h * img_w)
+    return area_ratio
